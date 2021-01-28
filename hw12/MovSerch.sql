@@ -265,18 +265,25 @@ INSERT INTO `reviews` VALUES
 ('9', '9', '9', 'Consequatur repudiandae est enim quis suscipit dolorem. Earum necessitatibus voluptas illo odit. Ipsam fugiat mollitia nihil dolor officia.', '1992-07-12 17:24:47'),
 ('10', '10', '10', 'Totam id dolor necessitatibus sed. Nihil similique qui in. Minus est praesentium aut sint quae impedit nihil.', '2012-10-10 05:52:32');
 
-
-
 -- --6 скрипты характерных выборок (включающие группировки, JOIN'ы, вложенные таблицы);
 -- можно что то одно из скобок
-
-
+ 
 SELECT name FROM users ORDER BY name asc; 
+
 select id, movie_title FROM movies WHERE (release_date < '2000.01.01');
+
 -- запрос имен пользователей которые оставили рецензии
-select name from users having (select id_user from reviews); 
--- вывести название фильма, актеров, узеров и рецензии
-select movie_title from movies
+select id, name from users where id in (select id_user from reviews) order by id; 
+
+-- вывести  id и название фильма, имя киноличностей, id и пользователи которые поставили оценки, рейтинг выше 5
+select mpm.movie as 'id фильма', m.movie_title as 'название фильма', mp.name  as 'участники фильма', 
+um.users as 'id пользователя', u2.name as 'имя пользователя', um.rating as 'рейтинг > 5' from movie_personality_movies mpm 
+join movies m on mpm.movie = m.id 
+join movie_personality mp on mpm.movie_personality = mp.id
+join users_movies um on m.id = um.movies 
+join users u2 on u2.id = um.users 
+where um.rating > 5
+order by m.id 
 
 -- --7 представления (минимум 2);
 -- обьеденить с 6, views можно как пример из sacila посмотреть 
