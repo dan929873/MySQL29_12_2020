@@ -184,7 +184,17 @@ INSERT INTO `movie_personality_movies` VALUES ('1', '1'),
 ('7', '7'),
 ('8', '8'),
 ('9', '9'),
-('10', '10');
+('10', '10'),
+('1', '2'),
+('2', '3'),
+('3', '4'),
+('4', '5'),
+('5', '6'),
+('6', '7'),
+('7', '8'),
+('8', '9'),
+('9', '10'),
+('10', '1');
 
 INSERT INTO `cinemas_movies` VALUES ('1', '1'),
 ('2', '2'),
@@ -265,6 +275,8 @@ INSERT INTO `reviews` VALUES
 ('9', '9', '9', 'Consequatur repudiandae est enim quis suscipit dolorem. Earum necessitatibus voluptas illo odit. Ipsam fugiat mollitia nihil dolor officia.', '1992-07-12 17:24:47'),
 ('10', '10', '10', 'Totam id dolor necessitatibus sed. Nihil similique qui in. Minus est praesentium aut sint quae impedit nihil.', '2012-10-10 05:52:32');
 
+
+
 -- --6 скрипты характерных выборок (включающие группировки, JOIN'ы, вложенные таблицы);
 -- можно что то одно из скобок
  
@@ -277,7 +289,8 @@ select id, name from users where id in (select id_user from reviews) order by id
 
 -- вывести  id и название фильма, имя киноличностей, id и пользователи которые поставили оценки, рейтинг выше 5
 select mpm.movie as 'id фильма', m.movie_title as 'название фильма', mp.name  as 'участники фильма', 
-um.users as 'id пользователя', u2.name as 'имя пользователя', um.rating as 'рейтинг > 5' from movie_personality_movies mpm 
+um.users as 'id пользователя', u2.name as 'имя пользователя', um.rating as 'рейтинг > 5' 
+from movie_personality_movies mpm 
 join movies m on mpm.movie = m.id 
 join movie_personality mp on mpm.movie_personality = mp.id
 join users_movies um on m.id = um.movies 
@@ -285,20 +298,49 @@ join users u2 on u2.id = um.users
 where um.rating > 5
 order by m.id 
 
+
 -- --7 представления (минимум 2);
 -- обьеденить с 6, views можно как пример из sacila посмотреть 
--- 
--- 1 кассовые сборы
--- 2 сегодня в кино (зависит от геолокаци)
--- 3 самые ожидаемые фильмы (рейтинги и выход в будущем)
--- 
+ 
+-- 1 лучшие 3 фильма по мнению пользователей 
+create or replace view best_films3 as
+	select m.movie_title from users_movies um
+	join movies m on um.movies = m.id 
+	order by um.rating DESC
+	limit 3;
+
+select * from best_films3
+
+-- 2 фильмы вестерн
+create or replace view western as
+	select m.movie_title from style_movies sm 
+	join movies m on m.id = sm.id_movie 
+	where sm.style_mov = 'Western film';
+
+select * from western
+
 -- --8 хранимые процедуры / триггеры;
--- 1 процедура, 1 тригер, 1 процедура
--- 
 -- рекомендации 
 -- топ 3 любимых жанра
 -- топ 3 любимых актера и режисера
 -- топ 3 по обсолютному рейтигу
 
+drop procedure if exists ratingbest_movies_person_style;
+
+create procedure ratingbest_movie_person_style()
+begin
+-- рейтинг фильмов 
+-- актера и режисера
+-- жанр
+	select m.movie_title as 'название фильма', mp.name as 'киноличности', sm.style_mov as 'жанры' from users_movies um
+	join movies m on um.movies = m.id 
+	join movie_personality_movies mpm on mpm.movie = um.movies 
+	join movie_personality mp on mp.id = mpm.movie_personality 
+	join style_movies sm on sm.id_movie = m.id 
+	order by um.rating desc;
+
+end;
+
+call ratingbest_movie_person_style();
 
 
